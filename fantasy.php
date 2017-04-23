@@ -201,10 +201,10 @@ function getAllPlayers() {
         $name = $a['first_name'] . " " . $a['second_name'];
 
         $newValue = /*$a['value_season'] */
-            /*$a['points_per_game']*/
-            $a['form']
-            * $a['total_points']
-            * ($a['total_points']*100/$a['minutes'])
+            //$a['points_per_game']
+             $a['form']
+//            * $a['total_points']
+            * ($a['total_points']/$a['minutes'])
         ;
 
         $newArr[$name]['name'] = $name;
@@ -224,6 +224,7 @@ function getAllPlayers() {
 
     $playerUrl = 'https://fantasy.premierleague.com/drf/element-summary/';
 
+    // Fixture difficulty. Fetch for each player
     foreach($newArr as $key => $val) {
 
         $curl = curl_init($playerUrl . $val['id']);
@@ -232,20 +233,26 @@ function getAllPlayers() {
         curl_close($curl);
 
         $playerResponse = json_decode($playerResponse, true);
+        print_r($playerResponse); exit;
 
         $fixtures = $playerResponse['fixtures'];
-        $top10 = array_slice($fixtures, 0, 4);
+        $top10 = array_slice($fixtures, 0, 6);
 
-        $difficulty10 = 0;
+        $nextDifficulty = 0;
  
         foreach($top10 as $v) {
-            $difficulty10+=$v['difficulty'];
+            $nextDifficulty+=$v['difficulty'];
         }
 
-        $newArr[$key]['difficulty'] = $difficulty10;
+        $newArr[$key]['difficulty'] = $nextDifficulty;
 
-        $difficulty10*=$difficulty10;
-        $newScore = $val['val']/$difficulty10;
+        $nextDifficulty*=$nextDifficulty;
+
+        if ( in_array($val['team_code'], [80,11,35,21]) ) {
+            $val['val'] = $val['val'] * 6/5;
+        }
+
+        $newScore = $val['val']/$nextDifficulty;
 
         $newArr[$key]['val_difficulty'] = $newScore;
     }
