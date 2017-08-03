@@ -56,125 +56,125 @@ $topPlayers = [
     100001,
     47307,
 
-/*
+    /*
     // curr champs
-	634235,
-	5341,
-	1772712,
-	960454,
-	2538602,
-	287475,
-	699183,
-	1351181,
-	127253,
-	1041507,
-	1829195,
-	58945,
-	581518,
-	1433437,
-	925614,
-	254784,
-	2670403,
-	1094862,
-	2642765,
-	2918276,
-	133048,
-	1189694,
-	305813,
-	440169,
-	491942,
-	171968,
-	1852753,
-	1785188,
-	1935826,
-	2866649,
-	63984,
-	100694,
-	2621208,
-	102708,
-	107504,
-	2405036,
-	684663,
-	2115629,
-	431876,
-	1341954,
-	1713881,
-	37332,
-	624576,
-	2102142,
-	2777474,
-	1571029,
-	1302397,
-	329407,
-	755824,
-	2458887,
-	853235,
-    */
-];
-/*
-$leaguePlayers = [
-    2211410,
-    794368,
-    176173,
-    2614012,
+    634235,
+    5341,
+    1772712,
+    960454,
+    2538602,
+    287475,
+    699183,
+    1351181,
+    127253,
+    1041507,
+    1829195,
+    58945,
+    581518,
+    1433437,
+    925614,
+    254784,
+    2670403,
+    1094862,
+    2642765,
+    2918276,
+    133048,
+    1189694,
+    305813,
+    440169,
+    491942,
+    171968,
+    1852753,
+    1785188,
+    1935826,
+    2866649,
+    63984,
+    100694,
+    2621208,
+    102708,
+    107504,
+    2405036,
+    684663,
+    2115629,
+    431876,
+    1341954,
+    1713881,
+    37332,
+    624576,
+    2102142,
+    2777474,
+    1571029,
+    1302397,
+    329407,
+    755824,
+    2458887,
     853235,
-    102411,
-    2398802,
-    2370071,
-    436989,
-    830747,
-    2908593,
-    1193077,
-    2547505,
-];
-*/
+     */
+    ];
+    /*
+       $leaguePlayers = [
+       2211410,
+       794368,
+       176173,
+       2614012,
+       853235,
+       102411,
+       2398802,
+       2370071,
+       436989,
+       830747,
+       2908593,
+       1193077,
+       2547505,
+       ];
+     */
 
-function getPicks($playerId, $gameweekNum) {
+    function getPicks($playerId, $gameweekNum) {
 
-    echo "Getting picks for player id[{$playerId}]" . PHP_EOL;
+        echo "Getting picks for player id[{$playerId}]" . PHP_EOL;
 
-    $url = "https://fantasy.premierleague.com/drf/entry/$playerId/event/$gameweekNum/picks";
+        $url = "https://fantasy.premierleague.com/drf/entry/$playerId/event/$gameweekNum/picks";
 
-    $curl = curl_init($url); 
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($curl);
-    curl_close($curl);
+        $curl = curl_init($url); 
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($curl);
+        curl_close($curl);
 
-    $response = json_decode($response, true);
-    $response = $response['picks'];
+        $response = json_decode($response, true);
+        $response = $response['picks'];
 
-    // Unique player ids!!
-    $ids = [];
+        // Unique player ids!!
+        $ids = [];
 
-    foreach($response as $arr) {
-        $id = $arr['element'];
-        $ids[$id] = $id;
-    }
+        foreach($response as $arr) {
+            $id = $arr['element'];
+            $ids[$id] = $id;
+        }
 
-    //print_r($ids);
+        //print_r($ids);
 
-    $names = [];
+        $names = [];
 
-    global $allPlayers;
-    global $counts;
+        global $allPlayers;
+        global $counts;
 
-    foreach($allPlayers as $a) {
+        foreach($allPlayers as $a) {
 
-        $id = $a['id'];
+            $id = $a['id'];
 
-        if ( isset($ids[$id]) ) {
-            
-            if ( isset($counts[$a['first_name'] . ' ' . $a['second_name']]) ) {
-                $counts[$a['first_name'] . ' ' . $a['second_name']]++;
-            } else {
-                $counts[$a['first_name'] . ' ' . $a['second_name']] = 1;
+            if ( isset($ids[$id]) ) {
+
+                if ( isset($counts[$a['first_name'] . ' ' . $a['second_name']]) ) {
+                    $counts[$a['first_name'] . ' ' . $a['second_name']]++;
+                } else {
+                    $counts[$a['first_name'] . ' ' . $a['second_name']] = 1;
+                }
             }
         }
     }
-}
 
 function getAllPlayers() {
-    
+
     echo "Fetching all players.." . PHP_EOL;
 
     $url = 'https://fantasy.premierleague.com/drf/bootstrap-static';
@@ -184,44 +184,83 @@ function getAllPlayers() {
     curl_close($curl);
 
     $response = json_decode($response, true);
-
-    //print_r($response['events']);
     $response = $response['elements'];
+
+    // Processing of attributes
+    $attributes = [];
+
+    print_r(array_keys($response[0]));
+    exit;
+    foreach ($response as &$a) {
+        foreach ($a as $attr => $val) {
+            $attributes[$attr][$val] = true; 
+        }
+    }
+
+    // Remove keys where values are the same
+    $removeKeys = [];
+    foreach ($attributes as $k => $v) {
+        if (count($v)<=1) {
+            $removeKeys[] = $k;
+        }
+    }
+
+    $removeKeys = array_merge($removeKeys, ['photo']);
+
+    foreach ($response as &$a) {
+        $a['now_cost'] /= 10;
+        foreach($removeKeys as $key) {
+            unset($a[$key]);
+        }
+    }
+
+
+    // CSV setup
+    $fp = fopen('fpl_2016_2017_data_raw.csv', 'w');
+    $keys = array_keys($response[0]);
+    fputcsv($fp, $keys);
+
+    foreach ($response as $fields) {
+        fputcsv($fp, $fields);
+    }
+
+    fclose($fp);
+    print_r($response);
+    exit;
 
     $newArr = [];
 
     foreach($response as &$a) {
-
+        
         if ($a['value_season']==0) continue;
 
- //       $value = $a['total_points']/$a['value_season'];
-
+        //       $value = $a['total_points']/$a['value_season'];
         //if ($a['element_type'] != 4 || $value>6.6) continue;
 
         $name = $a['first_name'] . " " . $a['second_name'];
 
         $newValue = /*$a['value_season'] */
             //$a['points_per_game']
-             $a['form']
-//            * $a['total_points']
+            $a['form']
+            //            * $a['total_points']
             * ($a['total_points']/$a['minutes'])
-        ;
+            ;
 
         $newArr[$name]['name'] = $name;
         $newArr[$name]['type'] = $a['element_type'];
         $newArr[$name]['id'] = $a['id'];
         $newArr[$name]['total_points'] = $a['total_points'];
         $newArr[$name]['now_cost'] = $a['now_cost'];
-        $newArr[$name]['team_code'] = $a['team_code'];
-        $newArr[$name]['val'] = $newValue;
+//        $newArr[$name]['team_code'] = $a['team_code'];
+//        $newArr[$name]['val'] = $newValue;
     }
 
+/*
     usort($newArr, function($a, $b) {
-        return $a['val'] < $b['val'];
-    });
-    
-    $newArr = array_slice($newArr, 0, 60, true);
+            return $a['val'] < $b['val'];
+            });
 
+    $newArr = array_slice($newArr, 0, 60, true);
     $playerUrl = 'https://fantasy.premierleague.com/drf/element-summary/';
 
     // Fixture difficulty. Fetch for each player
@@ -233,13 +272,13 @@ function getAllPlayers() {
         curl_close($curl);
 
         $playerResponse = json_decode($playerResponse, true);
-        print_r($playerResponse); exit;
+        //print_r($playerResponse); exit;
 
         $fixtures = $playerResponse['fixtures'];
         $top10 = array_slice($fixtures, 0, 6);
 
         $nextDifficulty = 0;
- 
+
         foreach($top10 as $v) {
             $nextDifficulty+=$v['difficulty'];
         }
@@ -258,20 +297,25 @@ function getAllPlayers() {
     }
 
     usort($newArr, function($a, $b) {
-        return $a['val_difficulty'] < $b['val_difficulty'];
-    });
+            return $a['val_difficulty'] < $b['val_difficulty'];
+            });
 
-    print_r($newArr); exit;
+    //print_r($newArr); exit;
+    */
 
-	$fp = fopen('file2.csv', 'w');
+/*
+    $fp = fopen('file2.csv', 'w');
 
-	foreach ($newArr as $fields) {
-		fputcsv($fp, $fields);
-	}
+    $keys = array_keys($response[0]);
+    fputcsv($fp, $keys);
+    foreach ($response as $fields) {
+        fputcsv($fp, $fields);
+    }
 
-	fclose($fp);
+    fclose($fp);
 
     krsort($newArr);
+    */
 
     //print_r($newArr);
     //exit;
@@ -287,10 +331,9 @@ $counts = [];
 
 //$topPlayers
 //$leaguePlayers
-foreach($topPlayers as $playerId) {
-    getPicks($playerId, 22);
-}
+//foreach($topPlayers as $playerId) {
+//    getPicks($playerId, 22);
+//}
 
-arsort($counts);
-print_r($counts);
+//arsort($counts);
 //getPicks(5341,5);
