@@ -59,28 +59,22 @@ function countPlayersById($playerIds, $gameweekNum) {
 
 /*
 	Return format:
-		player name => count
+		web_name => count
 */
 function countPlayersByName($playerIds, $gameweekNum) {
 
 	$countPlayersById = countPlayersById($playerIds, $gameweekNum);
 	$playerData = getAllPlayers();
 
+    $playerCountsByName = [];
+    
+    foreach($countPlayersById as $id => $count) {
+        $name = $playerData[$id]['web_name'];
+        $playerCountsByName[$name] = $count; 
+    }
 
-/*
-Format:
-	Array(
-		0 => (
-			[id] => 1
-			[photo] => 48844.jpg
-			[web_name] => Ospina
-		)
-	)
-*/
-
+    return $playerCountsByName;
 }
-
-
 
 /*
  Return format indexed by playerIds:
@@ -158,8 +152,12 @@ function getAllPlayers() {
     $response = json_decode($response, true);
     $response = $response['elements'];
 
-    foreach ($response as &$a) {
-        $a['now_cost'] /= 10;
+    $allPlayers = [];
+
+    foreach ($response as $k => $v) {
+        $newKey = $v['id'];
+        $allPlayers[$newKey] = $response[$k];
+        $allPlayers[$newKey]['now_cost'] /= 10;
     }
 
     // CSV setup
@@ -172,7 +170,7 @@ function getAllPlayers() {
     }
 
     fclose($fp);
-    return $response;
+    return $allPlayers;
 }
 
 $topPlayers = [
@@ -206,6 +204,7 @@ $topPlayers = [
     2238
     ];
 
-print_r(getAllPlayers());
+//getAllPlayers();
 //getUserTeam(69,1);
-//countPlayersByName($topPlayers, 1);
+print_r(countPlayersByName($topPlayers, 1));
+echo count($topPlayers);
