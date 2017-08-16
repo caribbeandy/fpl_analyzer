@@ -112,24 +112,7 @@ function getUserTeam($playerId, $gameweekNum) {
 }
 
 /*
-    $allPlayers = getAllPlayers();
-
-    foreach($allPlayers as $a) {
-
-        $id = $a['id'];
-
-        if ( isset($ids[$id]) ) {
-
-            if ( isset($counts[$a['first_name'] . ' ' . $a['second_name']]) ) {
-                $counts[$a['first_name'] . ' ' . $a['second_name']]++;
-            } else {
-                $counts[$a['first_name'] . ' ' . $a['second_name']] = 1;
-            }
-        }
-    }
-*/
-/*
-Format:
+Return format:
 	Array(
 		0 => (
 			[id] => 1
@@ -138,7 +121,6 @@ Format:
 		)
 	)
 */
-
 function getAllPlayers() {
 
     echo "Fetching all players.." . PHP_EOL;
@@ -204,7 +186,5 @@ $topPlayers = [
     2238
     ];
 
-//getAllPlayers();
-//getUserTeam(69,1);
 print_r(countPlayersByName($topPlayers, 1));
 echo count($topPlayers);
