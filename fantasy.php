@@ -69,8 +69,8 @@ function countPlayersByName($playerIds, $gameweekNum) {
     $playerCountsByName = [];
     
     foreach($countPlayersById as $id => $count) {
-        $name = $playerData[$id]['web_name'];
-        $playerCountsByName[$name] = $count; 
+        $name = $playerData[$id]['first_name'] . " " . $playerData[$id]['second_name'];
+        $playerCountsByName[$name] = number_format ($count/count($playerIds)*100,4) . '%';
     }
 
     return $playerCountsByName;
@@ -143,7 +143,7 @@ function getAllPlayers() {
     }
 
     // CSV setup
-    $fp = fopen('fpl_2016_2017_data_raw.csv', 'w');
+    $fp = fopen('fpl_2017_2018_data_raw.csv', 'w');
     $keys = array_keys($response[key($response)]);
     fputcsv($fp, $keys);
 
@@ -186,5 +186,5 @@ $topPlayers = [
     2238
     ];
 
-print_r(countPlayersByName($topPlayers, 1));
+print_r(countPlayersByName($topPlayers, 9));
 echo count($topPlayers);
